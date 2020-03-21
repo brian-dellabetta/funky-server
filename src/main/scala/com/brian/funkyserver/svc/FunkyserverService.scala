@@ -3,30 +3,27 @@ package com.brian.funkyserver.svc
 import cats.effect.Sync
 import org.http4s.HttpRoutes
 import org.http4s.dsl.Http4sDsl
-
 import cats.implicits._
+import org.http4s.client.Client
 
-object FunkyserverService {
+class FunkyserverService[F[_] : Sync](client: Client[F]) extends Http4sDsl[F] {
 
-  def jokeRoutes[F[_] : Sync](J: Jokes[F]): HttpRoutes[F] = {
-    val dsl = new Http4sDsl[F] {}
-    import dsl._
+  def routes(): HttpRoutes[F] = {
+
+    val h = HelloWorld.impl[F]
+    val j = Jokes.impl[F](client)
+
     HttpRoutes.of[F] {
       case GET -> Root / "joke" =>
         for {
-          joke <- J.get
+          joke <- j.get
           resp <- Ok(joke)
         } yield resp
-    }
-  }
 
-  def helloWorldRoutes[F[_] : Sync](H: HelloWorld[F]): HttpRoutes[F] = {
-    val dsl = new Http4sDsl[F] {}
-    import dsl._
-    HttpRoutes.of[F] {
+
       case GET -> Root / "hello" / name =>
         for {
-          greeting <- H.hello(HelloWorld.Name(name))
+          greeting <- h.hello(HelloWorld.Name(name))
           resp <- Ok(greeting)
         } yield resp
     }
