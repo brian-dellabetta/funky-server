@@ -1,4 +1,4 @@
-package com.brian.funkyserver
+package com.brian.funkyserver.svc
 
 import cats.Applicative
 import cats.effect.Sync
