@@ -5,5 +5,5 @@ import cats.implicits._
 
 object Main extends IOApp {
   def run(args: List[String]) =
-    FunkyserverServer.stream[IO].compile.drain.as(ExitCode.Success)
+    FunkyserverServer.stream.compile.drain.as(ExitCode.Success)
 }
