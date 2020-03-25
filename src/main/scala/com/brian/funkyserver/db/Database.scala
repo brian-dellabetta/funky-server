@@ -8,8 +8,8 @@ object Database {
 
   def xa(implicit cs: ContextShift[IO]): Transactor[IO] = Transactor.fromDriverManager[IO](
     "org.postgresql.Driver",
-    "jdbc:postgresql:world",
+    "jdbc:postgresql:postgres",
     "postgres",
-    ""
+    "asdf"
   )
 }
