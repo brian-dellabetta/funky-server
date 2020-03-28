@@ -67,6 +67,23 @@ class FunkyserverService(client: Client[IO], repository: Repository) extends Htt
           resp <- Created(createdStudent.asJson.noSpaces, Location(Uri.unsafeFromString(s"/students/${createdStudent.id}")))
         } yield resp
 
+      //Update student
+      case req@PUT -> Root / "students" / LongVar(id) =>
+        for {
+          student <- req.as[Student]
+          result <- repository.updateStudent(id, student)
+          resp <- result match {
+            case Left(_) => NotFound()
+            case Right(student) => Ok(student.asJson.noSpaces)
+          }
+        } yield resp
+
+      //Delete student
+      case DELETE -> Root / "students" / LongVar(id) =>
+        repository.deleteStudent(id).flatMap {
+          case Left(_) => NotFound()
+          case Right(_) => NoContent()
+        }
     }
   }
 
@@ -79,7 +96,7 @@ class FunkyserverService(client: Client[IO], repository: Repository) extends Htt
   //    )
   //  }
   //  implicit val studentDecoder: Decoder[Student] = Decoder.forProduct3("id", "firstName", "lastName")(Student.apply)
-  
+
   //https://github.com/http4s/http4s/issues/1648
   //  implicit def jsonEncoder[A <: Product : Encoder, F[_] : Sync]: EntityEncoder[F, A] =
   //    jsonEncoderOf[F, A]

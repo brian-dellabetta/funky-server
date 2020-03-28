@@ -27,4 +27,24 @@ class Repository(xa: Transactor[IO]) {
       .transact(xa)
       .map { id => s.copy(id = Some(id)) }
   }
+
+  def updateStudent(id: Long, s: Student): IO[Either[StudentNotFoundError.type, Student]] = {
+    sql"UPDATE student set first_name = ${s.firstName}, last_name = ${s.lastName} where id = ${id}"
+      .update
+      .run
+      .transact(xa)
+      .map { affectedRows =>
+        if (affectedRows == 1) Right(s.copy(id=Some(id))) else Left(StudentNotFoundError)
+      }
+  }
+
+  def deleteStudent(id: Long): IO[Either[StudentNotFoundError.type, Unit]] = {
+    sql"DELETE FROM student where id = ${id}"
+      .update
+      .run
+      .transact(xa)
+      .map { affectedRows =>
+        if (affectedRows == 1) Right(()) else Left(StudentNotFoundError)
+      }
+  }
 }
