@@ -3,6 +3,8 @@ val CirceVersion = "0.13.0"
 val Specs2Version = "4.8.3"
 val LogbackVersion = "1.2.3"
 val DoobieVersion = "0.8.8"
+val SangriaVersion = "2.0.0-M4"
+val SangriaCirceVersion = "1.3.0"
 
 lazy val root = (project in file("."))
   .settings(
@@ -17,10 +19,13 @@ lazy val root = (project in file("."))
       "org.http4s" %% "http4s-dsl" % Http4sVersion,
       "io.circe" %% "circe-core" % CirceVersion,
       "io.circe" %% "circe-generic" % CirceVersion,
+      "io.circe" %% "circe-optics" % CirceVersion,
       "org.specs2" %% "specs2-core" % Specs2Version % "test",
       "ch.qos.logback" % "logback-classic" % LogbackVersion,
       "org.tpolecat" %% "doobie-core" % DoobieVersion,
-      "org.tpolecat" %% "doobie-postgres" % DoobieVersion
+      "org.tpolecat" %% "doobie-postgres" % DoobieVersion,
+      "org.sangria-graphql" %% "sangria" % SangriaVersion,
+      "org.sangria-graphql" %% "sangria-circe" % SangriaCirceVersion
     ),
     addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.10.3"),
     addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.0")

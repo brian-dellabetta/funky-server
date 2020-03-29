@@ -13,7 +13,7 @@ import io.circe.generic.auto._
 import com.brian.funkyserver.model.{StudentNotFoundError, Student}
 
 import com.brian.funkyserver.repository.Repository
-
+import com.brian.funkyserver.gql.GraphQL
 
 import io.circe.{Decoder, Encoder, Json}
 import org.http4s.{EntityDecoder, EntityEncoder}
@@ -21,7 +21,8 @@ import org.http4s.circe.{jsonEncoderOf, jsonOf}
 import cats.effect.IO
 import cats.Applicative
 
-class FunkyserverService(client: Client[IO], repository: Repository) extends Http4sDsl[IO] {
+
+class FunkyserverService(client: Client[IO], repository: Repository, graphql: GraphQL[Unit]) extends Http4sDsl[IO] {
 
   def routes(): HttpRoutes[IO] = {
 
@@ -40,6 +41,13 @@ class FunkyserverService(client: Client[IO], repository: Repository) extends Htt
           greeting <- h.hello(HelloWorld.Name(name))
           resp <- Ok(greeting)
         } yield resp
+
+      //GraphQL
+      case req@POST -> Root / "graphql" =>
+        req.as[Json].flatMap(graphql.query).flatMap {
+          case Right(json) => Ok(json.noSpaces)
+          case Left(json) => BadRequest(json.noSpaces)
+        }
 
       //Get students
       case GET -> Root / "students" =>

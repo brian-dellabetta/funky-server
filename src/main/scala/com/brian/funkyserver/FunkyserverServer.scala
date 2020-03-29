@@ -12,16 +12,39 @@ import org.http4s.implicits._
 import svc.FunkyserverService
 import repository.Repository
 import db.Database
+import gql.GraphQL
+import gql.schema.QuerySchema
+
+import doobie.Transactor
+import doobie.util.ExecutionContexts
+import sangria.schema._
+import cats.effect.Effect
+
 
 object FunkyserverServer {
+  // Construct a GraphQL implementation based on our Sangria definitions.
+  def graphQL(transactor: Transactor[IO])(implicit blockingContext: ExecutionContext, c: ContextShift[IO]): GraphQL[Unit] =
+    new GraphQL[Unit](
+      Schema(
+        query = QuerySchema[IO]()
+        //          mutation = Some(MutationType[IO])
+      ),
+      //      WorldDeferredResolver[IO],
+      //      MasterRepo.fromTransactor(transactor).pure[IO],
+      blockingContext
+    )
 
   def stream(implicit T: Timer[IO], C: ContextShift[IO], CE: ConcurrentEffect[IO]): Stream[IO, Nothing] = {
     for {
       client <- BlazeClientBuilder[IO](ExecutionContext.global).stream
 
-      repository = new Repository(Database.xa)
+      xa = Database.xa
 
-      svc = new FunkyserverService(client, repository)
+      repository = new Repository(xa)
+
+      gql = graphQL(xa)(ExecutionContext.global, C)
+
+      svc = new FunkyserverService(client, repository, gql)
 
       // Combine Service Routes into an HttpApp.
       // Can also be done via a Router if you
